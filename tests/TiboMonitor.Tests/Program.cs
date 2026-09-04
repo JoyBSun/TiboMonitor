@@ -16,7 +16,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("我已读正确保存", TestMarkReadAsync),
     ("网络失败会返回可捕获异常", TestNetworkFailureAsync),
     ("本机 direct 模式直接生成标准 Feed", TestDirectModeAsync),
-    ("本机 direct 模式强制最低 20 分钟", TestDirectIntervalFloorAsync),
+    ("检查间隔限制为 5～1440 分钟", TestPollingIntervalBoundsAsync),
     ("实时镜像解析原创与回复", TestFlashFillingParserAsync),
     ("设置保存后可重新加载", TestConfigSaveAsync)
 };
@@ -217,7 +217,7 @@ static Task TestFlashFillingParserAsync()
     return Task.CompletedTask;
 }
 
-static Task TestDirectIntervalFloorAsync()
+static Task TestPollingIntervalBoundsAsync()
 {
     var root = NewTemporaryRoot();
     try
@@ -232,7 +232,14 @@ static Task TestDirectIntervalFloorAsync()
             }
             """);
         var options = ConfigLoader.Load(path);
-        Assert(options.LocalPollingIntervalSeconds == 1200, "direct 模式必须限制为最低 1200 秒");
+        Assert(options.LocalPollingIntervalSeconds == MonitorOptions.MinimumPollingIntervalSeconds,
+            "检查间隔必须限制为最低 300 秒");
+
+        options.LocalPollingIntervalSeconds = 100_000;
+        ConfigLoader.Save(options, path);
+        var reloaded = ConfigLoader.Load(path);
+        Assert(reloaded.LocalPollingIntervalSeconds == MonitorOptions.MaximumPollingIntervalSeconds,
+            "检查间隔必须限制为最高 86400 秒");
     }
     finally
     {

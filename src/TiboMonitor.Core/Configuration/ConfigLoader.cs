@@ -62,9 +62,10 @@ public static class ConfigLoader
             throw new InvalidDataException("FeedMode 只能是 direct 或 remote。");
         }
 
-        options.LocalPollingIntervalSeconds = options.FeedMode == "direct"
-            ? Math.Max(1200, options.LocalPollingIntervalSeconds)
-            : Math.Max(15, options.LocalPollingIntervalSeconds);
+        options.LocalPollingIntervalSeconds = Math.Clamp(
+            options.LocalPollingIntervalSeconds,
+            MonitorOptions.MinimumPollingIntervalSeconds,
+            MonitorOptions.MaximumPollingIntervalSeconds);
         options.HttpTimeoutSeconds = Math.Clamp(options.HttpTimeoutSeconds, 5, 120);
         options.FirstRunRecentCount = Math.Clamp(options.FirstRunRecentCount, 1, 20);
         options.MaxStatePosts = Math.Clamp(options.MaxStatePosts, 100, 10_000);

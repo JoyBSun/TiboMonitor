@@ -19,7 +19,7 @@ TiboMonitor 是一个 Windows 常驻提醒工具，每 20 分钟检查一次 X �
 ## 下载和安装
 
 1. 打开仓库右侧的 [Releases](https://github.com/JoyBSun/TiboMonitor/releases/latest)。
-2. 下载 `TiboMonitor-win-x64-v1.1.0.zip`。
+2. 下载 `TiboMonitor-win-x64-v1.1.1.zip`。
 3. 解压 ZIP。
 4. 双击 `Install.cmd`。
 5. 安装完成后，程序会自动启动并出现在系统托盘。
@@ -70,13 +70,15 @@ Uninstall.cmd
 
 右键托盘图标并选择“设置...”可以直接调整：
 
-- 检查间隔（20～1440 分钟）；
+- 检查间隔（5～1440 分钟）；
 - Reply、Quote、Repost 提醒开关；
 - 提醒窗口是否始终置顶；
 - Windows 登录后是否自动启动；
 - 打开本地数据目录或日志目录。
 
 保存后立即写入 `config.json` 并应用，检查间隔会从保存时刻重新计时。账号、数据源和 baseline 重置属于高级操作，不在普通设置窗口开放。
+
+设置窗口会按屏幕可用空间自动缩小，内容过长时可滚动，“取消/保存”始终固定在底部；窗口最大不超过 720×760。
 
 排障时也可以使用 `TiboMonitor.exe --settings` 启动并直接打开设置窗口。
 
@@ -90,7 +92,7 @@ Uninstall.cmd
 | `FeedMode` | `direct` | `direct` 直接读取公开源；`remote` 读取自定义 JSON Feed |
 | `FeedUrl` | 空 | 仅 `remote` 模式使用 |
 | `MockFeedPath` | 空 | 非空时优先读取本地测试文件 |
-| `LocalPollingIntervalSeconds` | `1200` | 检查周期；direct 模式最低 1200 秒 |
+| `LocalPollingIntervalSeconds` | `1200` | 检查周期；允许 300～86400 秒（5 分钟～24 小时） |
 | `HttpTimeoutSeconds` | `20` | 单次请求超时 |
 | `NotifyReplies` | `false` | 是否提醒回复 |
 | `NotifyQuotes` | `true` | 是否提醒引用 |
@@ -126,14 +128,14 @@ dotnet run --project tests\TiboMonitor.Tests\TiboMonitor.Tests.csproj --configur
 生成本地 Release 包：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\build-release.ps1 -Version 1.1.0
+powershell -ExecutionPolicy Bypass -File .\scripts\build-release.ps1 -Version 1.1.1
 ```
 
 输出：
 
 ```text
-release\v1.1.0\TiboMonitor-win-x64-v1.1.0.zip
-release\v1.1.0\TiboMonitor-win-x64-v1.1.0.zip.sha256
+release\v1.1.1\TiboMonitor-win-x64-v1.1.1.zip
+release\v1.1.1\TiboMonitor-win-x64-v1.1.1.zip.sha256
 ```
 
 ## 自动发布 GitHub Release
@@ -149,9 +151,9 @@ release\v1.1.0\TiboMonitor-win-x64-v1.1.0.zip.sha256
 维护者发布命令：
 
 ```powershell
-git tag -a v1.1.0 -m "TiboMonitor v1.1.0"
+git tag -a v1.1.1 -m "TiboMonitor v1.1.1"
 git push origin main
-git push origin v1.1.0
+git push origin v1.1.1
 ```
 
 详细设计见 [架构说明](docs/ARCHITECTURE.md)，验证记录见 [测试结果](docs/TEST_RESULTS.md)。

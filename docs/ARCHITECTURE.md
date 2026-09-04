@@ -6,7 +6,7 @@
 ┌──────────────────────── Windows 本机 ────────────────────────┐
 │ TiboMonitor.exe                                              │
 │   -> 启动时立即检查                                          │
-│   -> PeriodicTimer：每 1200 秒检查                           │
+│   -> PeriodicTimer：默认每 1200 秒检查                       │
 │   -> RemoteFeedClient（FeedMode=direct）                     │
 │   -> 公开实时镜像（禁用系统代理）                            │
 │   -> FlashFillingParser                                      │
@@ -41,7 +41,7 @@ Id, Text, CreatedAt, Url, Type
 
 将 `FeedMode` 改为 `remote` 并填写 `FeedUrl` 后，客户端读取标准 JSON Feed。该模式便于高级用户接入自己的可靠数据源。
 
-## 20 分钟周期
+## 5 分钟～24 小时可调周期
 
 配置：
 
@@ -50,7 +50,7 @@ Id, Text, CreatedAt, Url, Type
 "LocalPollingIntervalSeconds": 1200
 ```
 
-程序启动后先立即检查，然后通过 `PeriodicTimer` 等待 1200 秒。为避免免费入口被频繁请求，direct 模式在配置加载时强制最低 1200 秒，即使旧配置误写成 60 秒也会按 20 分钟运行。
+程序启动后先立即检查，然后通过 `PeriodicTimer` 按设置的周期运行。默认值是 1200 秒（20 分钟），允许范围为 300～86400 秒（5～1440 分钟）；超出范围的配置会自动收敛到最近边界。
 
 托盘“立即检查”允许人工请求，但不应连续点击；HTTP 错误时程序记录日志并等待下一周期。
 
@@ -96,7 +96,7 @@ Id, Text, CreatedAt, FirstDetectedAt, Url, Type, Read
 
 ## 设置即时应用
 
-托盘“设置...”打开 `SettingsWindow`。普通设置只开放低风险选项：检查间隔、提醒类型、置顶和开机启动。
+托盘“设置...”打开 `SettingsWindow`。底部“取消/保存”按钮固定显示，主体区域在小屏幕或高 DPI 下自动滚动；窗口尺寸根据可用桌面收敛，且不能超过 720×760。普通设置只开放低风险选项：检查间隔、提醒类型、置顶和开机启动。
 
 ```text
 SettingsWindow

@@ -29,7 +29,7 @@ Tests: 13/13 passed
 | 我已读正确保存 | PASS |
 | 网络失败返回可捕获异常 | PASS |
 | direct 模式生成标准 Feed | PASS |
-| direct 模式强制最低 20 分钟 | PASS |
+| 检查间隔限制为 5～1440 分钟 | PASS |
 | 实时镜像解析原创与回复 | PASS |
 | 设置保存后可重新加载 | PASS |
 
@@ -41,7 +41,7 @@ Isolated Install.cmd execution: PASS
 Required files missing: 0
 Forbidden UserData/bin/obj files: 0
 Installed application process affected during test: No
-Local v1.1.0 SHA256: 1c4daf424d8abc2c5ea26434ec1323cc0cc98ddd8b119732552e073729a9d995
+Local v1.1.1 SHA256: 3bfe3ca5bb4b85abbed86aa8f7c25d99962b7d7082f8dcc5b96b683de25f9e72
 ```
 
 ## 设置窗口桌面验证
@@ -50,15 +50,12 @@ Local v1.1.0 SHA256: 1c4daf424d8abc2c5ea26434ec1323cc0cc98ddd8b119732552e073729a
 
 ```text
 Window title: Tibo Monitor 设置
-Initial interval: 20 minutes
-Initial reply notification: Off
-Initial quote notification: On
-Initial window topmost: On
-Changed interval: 30 minutes
-Changed reply notification: On
-Saved interval seconds: 1800
-Saved reply notification: True
-Settings applied log entry: Found
+Initial window size: 560 x 680
+Minimum window size: 480 x 420
+Maximum window size: 720 x 760
+Cancel and Save visible at minimum size: Yes
+Changed interval: 5 minutes
+Saved interval seconds: 300
 Settings window closed after Save: Yes
 Settings UI test: PASS
 ```

@@ -34,7 +34,9 @@ public partial class SettingsWindow : Window
         AccountText.Text = $"@{options.Account}";
         SourceText.Text = options.FeedMode == "direct" ? "公开实时源（本机直连）" : "自定义远程 JSON Feed";
         DataPathText.Text = dataRoot;
-        IntervalMinutesTextBox.Text = Math.Max(20, options.LocalPollingIntervalSeconds / 60).ToString();
+        IntervalMinutesTextBox.Text = Math.Max(
+            MonitorOptions.MinimumPollingIntervalSeconds / 60,
+            options.LocalPollingIntervalSeconds / 60).ToString();
         NotifyRepliesCheckBox.IsChecked = options.NotifyReplies;
         NotifyQuotesCheckBox.IsChecked = options.NotifyQuotes;
         NotifyRepostsCheckBox.IsChecked = options.NotifyReposts;
@@ -42,12 +44,33 @@ public partial class SettingsWindow : Window
         AutoStartCheckBox.IsChecked = autoStart.IsEnabled();
     }
 
+    private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        var workArea = SystemParameters.WorkArea;
+        const double screenMargin = 32;
+        var availableWidth = Math.Max(360, workArea.Width - screenMargin);
+        var availableHeight = Math.Max(320, workArea.Height - screenMargin);
+
+        MinWidth = 0;
+        MinHeight = 0;
+        MaxWidth = Math.Min(720, availableWidth);
+        MaxHeight = Math.Min(760, availableHeight);
+        MinWidth = Math.Min(480, MaxWidth);
+        MinHeight = Math.Min(420, MaxHeight);
+        Width = Math.Min(560, MaxWidth);
+        Height = Math.Min(680, MaxHeight);
+
+        Left = workArea.Left + Math.Max(0, (workArea.Width - Width) / 2);
+        Top = workArea.Top + Math.Max(0, (workArea.Height - Height) / 2);
+    }
+
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
         if (!int.TryParse(IntervalMinutesTextBox.Text.Trim(), out var intervalMinutes) ||
-            intervalMinutes is < 20 or > 1440)
+            intervalMinutes is < MonitorOptions.MinimumPollingIntervalSeconds / 60 or
+                > MonitorOptions.MaximumPollingIntervalSeconds / 60)
         {
-            MessageBox.Show("检查间隔必须是 20～1440 之间的整数分钟。", "设置无效",
+            MessageBox.Show("检查间隔必须是 5～1440 之间的整数分钟。", "设置无效",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
             IntervalMinutesTextBox.Focus();
             IntervalMinutesTextBox.SelectAll();

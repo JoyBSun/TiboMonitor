@@ -1,4 +1,4 @@
-TiboMonitor v1.1.0 - Windows x64
+TiboMonitor v1.1.1 - Windows x64
 
 INSTALL
 1. Extract the complete ZIP file.

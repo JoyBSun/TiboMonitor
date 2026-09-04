@@ -2,6 +2,9 @@ namespace TiboMonitor.Core.Configuration;
 
 public sealed class MonitorOptions
 {
+    public const int MinimumPollingIntervalSeconds = 5 * 60;
+    public const int MaximumPollingIntervalSeconds = 24 * 60 * 60;
+
     public string Account { get; set; } = "thsottiaux";
     public string FeedMode { get; set; } = "direct";
     public string FeedUrl { get; set; } = string.Empty;

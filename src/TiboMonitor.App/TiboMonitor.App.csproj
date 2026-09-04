@@ -14,10 +14,10 @@
     <DebugSymbols>false</DebugSymbols>
     <AssemblyName>TiboMonitor</AssemblyName>
     <RootNamespace>TiboMonitor.App</RootNamespace>
-    <Version>1.1.0</Version>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
-    <InformationalVersion>1.1.0</InformationalVersion>
+    <Version>1.1.1</Version>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <FileVersion>1.1.1.0</FileVersion>
+    <InformationalVersion>1.1.1</InformationalVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TiboMonitor.Core\TiboMonitor.Core.csproj" />
