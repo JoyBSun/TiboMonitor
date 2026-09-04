@@ -14,7 +14,7 @@ dotnet run --project tests\TiboMonitor.Tests\TiboMonitor.Tests.csproj --configur
 
 ```text
 Release build: 0 warnings, 0 errors
-Tests: 12/12 passed
+Tests: 13/13 passed
 ```
 
 | 测试 | 结果 |
@@ -31,6 +31,7 @@ Tests: 12/12 passed
 | direct 模式生成标准 Feed | PASS |
 | direct 模式强制最低 20 分钟 | PASS |
 | 实时镜像解析原创与回复 | PASS |
+| 设置保存后可重新加载 | PASS |
 
 ## Release 包验证
 
@@ -40,8 +41,29 @@ Isolated Install.cmd execution: PASS
 Required files missing: 0
 Forbidden UserData/bin/obj files: 0
 Installed application process affected during test: No
-Local v1.0.0 SHA256: d1ce7e82f42a518418b59475a93c99faecf1ec4abb51dee698a60d9c35075c28
+Local v1.1.0 SHA256: 1c4daf424d8abc2c5ea26434ec1323cc0cc98ddd8b119732552e073729a9d995
 ```
+
+## 设置窗口桌面验证
+
+在隔离的临时数据目录中通过 Windows UI Automation 启动并操作真实设置窗口：
+
+```text
+Window title: Tibo Monitor 设置
+Initial interval: 20 minutes
+Initial reply notification: Off
+Initial quote notification: On
+Initial window topmost: On
+Changed interval: 30 minutes
+Changed reply notification: On
+Saved interval seconds: 1800
+Saved reply notification: True
+Settings applied log entry: Found
+Settings window closed after Save: Yes
+Settings UI test: PASS
+```
+
+验证结束后已恢复正式安装目录中的程序，未改动正式 `config.json` 和 `UserData`。
 
 本地 `build-release.ps1` 执行以下步骤：
 

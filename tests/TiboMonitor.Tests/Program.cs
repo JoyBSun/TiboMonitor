@@ -17,7 +17,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("网络失败会返回可捕获异常", TestNetworkFailureAsync),
     ("本机 direct 模式直接生成标准 Feed", TestDirectModeAsync),
     ("本机 direct 模式强制最低 20 分钟", TestDirectIntervalFloorAsync),
-    ("实时镜像解析原创与回复", TestFlashFillingParserAsync)
+    ("实时镜像解析原创与回复", TestFlashFillingParserAsync),
+    ("设置保存后可重新加载", TestConfigSaveAsync)
 };
 
 var failed = 0;
@@ -232,6 +233,40 @@ static Task TestDirectIntervalFloorAsync()
             """);
         var options = ConfigLoader.Load(path);
         Assert(options.LocalPollingIntervalSeconds == 1200, "direct 模式必须限制为最低 1200 秒");
+    }
+    finally
+    {
+        Directory.Delete(root, recursive: true);
+    }
+
+    return Task.CompletedTask;
+}
+
+static Task TestConfigSaveAsync()
+{
+    var root = NewTemporaryRoot();
+    try
+    {
+        var path = Path.Combine(root, "config.json");
+        var options = new MonitorOptions
+        {
+            Account = "thsottiaux",
+            FeedMode = "direct",
+            LocalPollingIntervalSeconds = 3600,
+            NotifyReplies = true,
+            NotifyQuotes = false,
+            NotifyReposts = true,
+            TopMost = false,
+            AutoStart = false
+        };
+
+        ConfigLoader.Save(options, path);
+        var loaded = ConfigLoader.Load(path);
+        Assert(loaded.LocalPollingIntervalSeconds == 3600, "检查间隔应被保存");
+        Assert(loaded.NotifyReplies && !loaded.NotifyQuotes && loaded.NotifyReposts,
+            "提醒类型设置应被保存");
+        Assert(!loaded.TopMost && !loaded.AutoStart, "程序行为设置应被保存");
+        Assert(!File.Exists($"{path}.tmp"), "原子保存不应留下临时文件");
     }
     finally
     {

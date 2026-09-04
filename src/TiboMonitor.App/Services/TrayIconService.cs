@@ -11,12 +11,14 @@ public sealed class TrayIconService : IDisposable
     private readonly Forms.NotifyIcon _icon;
     private readonly Forms.ToolStripMenuItem _autoStartItem;
     private readonly RollingFileLogger _logger;
+    private bool _updatingAutoStart;
     private string _status = "正在启动";
     private int _unreadCount;
 
     public TrayIconService(
         Action showWindow,
         Func<Task> checkNow,
+        Action showSettings,
         Action showLogs,
         Action exit,
         AutoStartService autoStart,
@@ -27,6 +29,7 @@ public sealed class TrayIconService : IDisposable
         menu.Items.Add("打开", null, (_, _) => showWindow());
         menu.Items.Add("立即检查", null, async (_, _) => await RunSafelyAsync(checkNow));
         menu.Items.Add("查看未读", null, (_, _) => showWindow());
+        menu.Items.Add("设置...", null, (_, _) => showSettings());
         menu.Items.Add("查看日志", null, (_, _) => showLogs());
         menu.Items.Add(new Forms.ToolStripSeparator());
         _autoStartItem = new Forms.ToolStripMenuItem("开机启动")
@@ -36,6 +39,11 @@ public sealed class TrayIconService : IDisposable
         };
         _autoStartItem.CheckedChanged += (_, _) =>
         {
+            if (_updatingAutoStart)
+            {
+                return;
+            }
+
             if (!autoStart.SetEnabled(_autoStartItem.Checked))
             {
                 _autoStartItem.Checked = autoStart.IsEnabled();
@@ -53,6 +61,19 @@ public sealed class TrayIconService : IDisposable
             ContextMenuStrip = menu
         };
         _icon.DoubleClick += (_, _) => showWindow();
+    }
+
+    public void SetAutoStartChecked(bool enabled)
+    {
+        _updatingAutoStart = true;
+        try
+        {
+            _autoStartItem.Checked = enabled;
+        }
+        finally
+        {
+            _updatingAutoStart = false;
+        }
     }
 
     public void SetUnreadCount(int count)

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text;
 
 namespace TiboMonitor.Core.Configuration;
 
@@ -8,7 +9,8 @@ public static class ConfigLoader
     {
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
-        AllowTrailingCommas = true
+        AllowTrailingCommas = true,
+        WriteIndented = true
     };
 
     public static MonitorOptions Load(string path)
@@ -33,6 +35,17 @@ public static class ConfigLoader
 
         Validate(options);
         return options;
+    }
+
+    public static void Save(MonitorOptions options, string path)
+    {
+        Validate(options);
+        var fullPath = Path.GetFullPath(path);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        var temporaryPath = $"{fullPath}.tmp";
+        var json = JsonSerializer.Serialize(options, JsonOptions);
+        File.WriteAllText(temporaryPath, json, new UTF8Encoding(false));
+        File.Move(temporaryPath, fullPath, true);
     }
 
     private static void Validate(MonitorOptions options)

@@ -68,6 +68,8 @@ public partial class MainWindow : Window
         Close();
     }
 
+    public void ApplyOptions(MonitorOptions options) => Topmost = options.TopMost;
+
     private StoredPost? CurrentPost => _unread.Count == 0 ? null : _unread[_index];
 
     private void Render()

@@ -16,6 +16,11 @@ public partial class App : System.Windows.Application
     private TrayIconService? _trayIcon;
     private RollingFileLogger? _logger;
     private MainWindow? _mainWindow;
+    private SettingsWindow? _settingsWindow;
+    private MonitorOptions? _options;
+    private AutoStartService? _autoStart;
+    private string? _configPath;
+    private string? _appDataRoot;
     private bool _ownsMutex;
 
     protected override async void OnStartup(StartupEventArgs e)
@@ -36,11 +41,13 @@ public partial class App : System.Windows.Application
         var appDataRoot = string.IsNullOrWhiteSpace(dataRootOverride)
             ? Path.Combine(AppContext.BaseDirectory, "UserData")
             : Path.GetFullPath(Environment.ExpandEnvironmentVariables(dataRootOverride));
+        _appDataRoot = appDataRoot;
         var logPath = Path.Combine(appDataRoot, "Logs", "tibo-monitor.log");
         _logger = new RollingFileLogger(logPath, 2_000_000, 3);
 
         MonitorOptions options;
         var configPath = Path.Combine(AppContext.BaseDirectory, "config.json");
+        _configPath = configPath;
         try
         {
             options = ConfigLoader.Load(configPath);
@@ -55,6 +62,7 @@ public partial class App : System.Windows.Application
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
         }
+        _options = options;
 
         _logger = new RollingFileLogger(logPath, options.MaxLogBytes, options.LogFileCount);
         _logger.Info("Startup");
@@ -71,18 +79,19 @@ public partial class App : System.Windows.Application
         _mainWindow = new MainWindow(_coordinator, options, _logger);
         MainWindow = _mainWindow;
 
-        var autoStart = new AutoStartService(_logger);
-        if (options.AutoStart && !autoStart.IsEnabled())
+        _autoStart = new AutoStartService(_logger);
+        if (options.AutoStart && !_autoStart.IsEnabled())
         {
-            autoStart.SetEnabled(true);
+            _autoStart.SetEnabled(true);
         }
 
         _trayIcon = new TrayIconService(
             showWindow: () => _mainWindow.ShowReminder(activate: true),
             checkNow: async () => await _coordinator.CheckNowAsync(manual: true),
+            showSettings: ShowSettings,
             showLogs: () => TrayIconService.OpenFolder(Path.GetDirectoryName(logPath)!),
             exit: ExitApplication,
-            autoStart,
+            _autoStart,
             _logger);
 
         _coordinator.UnreadChanged += OnUnreadChanged;
@@ -90,6 +99,56 @@ public partial class App : System.Windows.Application
             Dispatcher.InvokeAsync(() => _trayIcon?.SetStatus(status));
         _coordinator.Start();
         await _coordinator.InitializeAsync();
+        if (e.Args.Any(argument => string.Equals(argument, "--settings", StringComparison.OrdinalIgnoreCase)))
+        {
+            ShowSettings();
+        }
+    }
+
+    private void ShowSettings()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (_settingsWindow is { IsVisible: true })
+            {
+                _settingsWindow.Activate();
+                return;
+            }
+
+            if (_options is null || _configPath is null || _appDataRoot is null ||
+                _autoStart is null || _logger is null)
+            {
+                return;
+            }
+
+            _settingsWindow = new SettingsWindow(
+                _options,
+                _configPath,
+                _appDataRoot,
+                _autoStart,
+                _logger,
+                ApplySettings);
+            if (_mainWindow is { IsVisible: true })
+            {
+                _settingsWindow.Owner = _mainWindow;
+            }
+
+            _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+            _settingsWindow.Show();
+            _settingsWindow.Activate();
+        });
+    }
+
+    private void ApplySettings()
+    {
+        if (_options is null)
+        {
+            return;
+        }
+
+        _mainWindow?.ApplyOptions(_options);
+        _coordinator?.RestartPolling();
+        _trayIcon?.SetAutoStartChecked(_autoStart?.IsEnabled() == true);
     }
 
     private void OnUnreadChanged(int unreadCount, bool shouldShow)

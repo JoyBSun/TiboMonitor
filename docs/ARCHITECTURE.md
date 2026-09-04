@@ -94,6 +94,21 @@ Id, Text, CreatedAt, FirstDetectedAt, Url, Type, Read
 - 无未读：窗口隐藏，托盘和轮询继续运行。
 - Windows 重启：先加载 state，有未读立即显示，再检查网络。
 
+## 设置即时应用
+
+托盘“设置...”打开 `SettingsWindow`。普通设置只开放低风险选项：检查间隔、提醒类型、置顶和开机启动。
+
+```text
+SettingsWindow
+  -> 输入验证
+  -> ConfigLoader.Save（临时文件 + 原子替换）
+  -> MainWindow.ApplyOptions（置顶立即生效）
+  -> AutoStartService（注册表立即生效）
+  -> MonitorCoordinator.RestartPolling（新间隔立即生效）
+```
+
+账号、数据源地址、首次历史提醒和 baseline 重置仍保留在配置文件/高级维护层，避免普通用户误操作。
+
 ## 故障隔离
 
 | 故障 | 行为 |

@@ -16,7 +16,9 @@ public sealed class MonitorCoordinator : IDisposable
     private readonly DeduplicationService _deduplication = new();
     private readonly SemaphoreSlim _operationGate = new(1, 1);
     private readonly CancellationTokenSource _shutdown = new();
+    private readonly object _pollingGate = new();
     private MonitorState _state = new();
+    private CancellationTokenSource? _pollingCancellation;
     private Task? _pollingTask;
 
     public MonitorCoordinator(
@@ -38,7 +40,20 @@ public sealed class MonitorCoordinator : IDisposable
 
     public int UnreadCount { get; private set; }
 
-    public void Start() => _pollingTask = PollAsync(_shutdown.Token);
+    public void Start() => RestartPolling();
+
+    public void RestartPolling()
+    {
+        lock (_pollingGate)
+        {
+            _pollingCancellation?.Cancel();
+            _pollingCancellation?.Dispose();
+            _pollingCancellation = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
+            _pollingTask = PollAsync(_pollingCancellation.Token);
+        }
+
+        _logger.Info($"Polling interval applied: {_options.LocalPollingIntervalSeconds} seconds");
+    }
 
     public async Task InitializeAsync()
     {
@@ -175,6 +190,10 @@ public sealed class MonitorCoordinator : IDisposable
     public void Dispose()
     {
         _shutdown.Cancel();
+        lock (_pollingGate)
+        {
+            _pollingCancellation?.Cancel();
+        }
         try
         {
             _pollingTask?.Wait(TimeSpan.FromSeconds(2));
@@ -183,6 +202,7 @@ public sealed class MonitorCoordinator : IDisposable
         {
         }
 
+        _pollingCancellation?.Dispose();
         _operationGate.Dispose();
         _shutdown.Dispose();
         _httpClient.Dispose();
