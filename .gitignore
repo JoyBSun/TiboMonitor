@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+.vs/
+dist/
+*.user
+*.suo
+*.tmp
+config.local.json
+Data/
+Logs/
+UserData/
+artifacts/
+release/

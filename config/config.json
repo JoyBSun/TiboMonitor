@@ -1,0 +1,18 @@
+{
+  "Account": "thsottiaux",
+  "FeedMode": "direct",
+  "FeedUrl": "",
+  "MockFeedPath": "",
+  "LocalPollingIntervalSeconds": 1200,
+  "HttpTimeoutSeconds": 20,
+  "NotifyReplies": false,
+  "NotifyQuotes": true,
+  "NotifyReposts": false,
+  "TopMost": true,
+  "AutoStart": true,
+  "NotifyRecentOnFirstRun": false,
+  "FirstRunRecentCount": 1,
+  "MaxStatePosts": 1000,
+  "MaxLogBytes": 2000000,
+  "LogFileCount": 3
+}

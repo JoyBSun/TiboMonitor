@@ -1,0 +1,27 @@
+{
+  "user": "thsottiaux",
+  "generatedAt": "2026-08-26T06:35:00Z",
+  "posts": [
+    {
+      "id": "1993657000000000001",
+      "text": "这是一条本地 Mock 消息，用于验证置顶窗口、我已读与重启恢复。",
+      "createdAt": "2026-08-26T06:32:00Z",
+      "url": "https://x.com/thsottiaux/status/1993657000000000001",
+      "type": "Original"
+    },
+    {
+      "id": "1993657000000000002",
+      "text": "第二条 Mock 消息：用于验证多条未读、上一条和下一条。",
+      "createdAt": "2026-08-26T06:33:00Z",
+      "url": "https://x.com/thsottiaux/status/1993657000000000002",
+      "type": "Quote"
+    },
+    {
+      "id": "1993657000000000003",
+      "text": "第三条 Mock 消息：点击窗口右上角 X 后仍应保持未读。",
+      "createdAt": "2026-08-26T06:34:00Z",
+      "url": "https://x.com/thsottiaux/status/1993657000000000003",
+      "type": "Reply"
+    }
+  ]
+}
