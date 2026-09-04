@@ -11,6 +11,8 @@ public sealed class MonitorOptions
     public string MockFeedPath { get; set; } = string.Empty;
     public int LocalPollingIntervalSeconds { get; set; } = 1200;
     public int HttpTimeoutSeconds { get; set; } = 20;
+    public bool MonitoringEnabled { get; set; } = true;
+    public bool NotifyOriginals { get; set; } = true;
     public bool NotifyReplies { get; set; }
     public bool NotifyQuotes { get; set; } = true;
     public bool NotifyReposts { get; set; }

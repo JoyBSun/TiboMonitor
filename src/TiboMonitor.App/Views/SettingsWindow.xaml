@@ -63,6 +63,10 @@
                        FontSize="18"
                        FontWeight="SemiBold"
                        Foreground="#0F172A" />
+            <CheckBox x:Name="MonitoringEnabledCheckBox"
+                      Margin="0,12,0,4"
+                      Content="启用监控（关闭后停止网络检查）"
+                      ToolTip="关闭后保留程序、托盘、已有未读和本地数据，但不再自动或手动检查新动态。" />
             <Grid Margin="0,12,0,18">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="180" />
@@ -86,6 +90,10 @@
                        FontWeight="SemiBold"
                        Foreground="#0F172A" />
             <StackPanel Margin="0,10,0,18">
+                <CheckBox x:Name="NotifyOriginalsCheckBox"
+                          Margin="0,5"
+                          Content="提醒原创（Original）：该账号自己发布的普通帖子"
+                          ToolTip="默认开启；不属于回复、引用或纯转发的普通原创帖子。" />
                 <CheckBox x:Name="NotifyRepliesCheckBox"
                           Margin="0,5"
                           Content="提醒回复（Reply）：该账号回复别人的帖子"

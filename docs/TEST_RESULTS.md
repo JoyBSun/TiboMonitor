@@ -14,13 +14,14 @@ dotnet run --project tests\TiboMonitor.Tests\TiboMonitor.Tests.csproj --configur
 
 ```text
 Release build: 0 warnings, 0 errors
-Tests: 13/13 passed
+Tests: 14/14 passed
 ```
 
 | 测试 | 结果 |
 |---|---|
 | 首次运行只建立 baseline | PASS |
 | 新 Post 进入未读 | PASS |
+| 关闭原创提醒仍记录且不会补弹 | PASS |
 | 重复 Post ID 不重复提醒 | PASS |
 | 三条消息全部保留 | PASS |
 | 关闭再打开后未读仍存在 | PASS |
@@ -41,7 +42,7 @@ Isolated Install.cmd execution: PASS
 Required files missing: 0
 Forbidden UserData/bin/obj files: 0
 Installed application process affected during test: No
-Local v1.1.1 SHA256: 3bfe3ca5bb4b85abbed86aa8f7c25d99962b7d7082f8dcc5b96b683de25f9e72
+Local v1.1.2 SHA256: 95959fadddeaf6db6ad7db632099ef23ce6d095cc9d2b05b0ea7137d1f85c50b
 ```
 
 ## 设置窗口桌面验证

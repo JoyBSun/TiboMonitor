@@ -8,6 +8,7 @@ var tests = new (string Name, Func<Task> Run)[]
 {
     ("首次运行只建立 baseline", TestFirstRunBaselineAsync),
     ("新 Post 进入未读", TestNewPostAsync),
+    ("关闭原创提醒仍记录且不会补弹", TestOriginalFilteringAsync),
     ("重复 Post ID 不重复提醒", TestDuplicateAsync),
     ("三条消息全部保留", TestThreePostsAsync),
     ("关闭再打开后未读仍存在", TestPersistenceAsync),
@@ -55,6 +56,22 @@ static Task TestNewPostAsync()
     var (state, service) = Initialized();
     var result = service.Synchronize(state, Feed("200"), Options(), DateTimeOffset.UtcNow);
     Assert(result.NewPostCount == 1 && result.UnreadCount == 1, "新消息应产生 1 条未读");
+    return Task.CompletedTask;
+}
+
+static Task TestOriginalFilteringAsync()
+{
+    var (state, service) = Initialized();
+    var options = Options();
+    options.NotifyOriginals = false;
+
+    var muted = service.Synchronize(state, Feed("200"), options, DateTimeOffset.UtcNow);
+    Assert(muted.NewPostCount == 0 && muted.UnreadCount == 0, "关闭原创提醒后不应产生未读");
+    Assert(state.Posts.Single(post => post.Id == "200").Read, "关闭提醒的原创仍应记录为已见");
+
+    options.NotifyOriginals = true;
+    var enabledAgain = service.Synchronize(state, Feed("200"), options, DateTimeOffset.UtcNow);
+    Assert(enabledAgain.NewPostCount == 0, "重新开启原创提醒后不应补弹已经见过的帖子");
     return Task.CompletedTask;
 }
 
@@ -234,6 +251,8 @@ static Task TestPollingIntervalBoundsAsync()
         var options = ConfigLoader.Load(path);
         Assert(options.LocalPollingIntervalSeconds == MonitorOptions.MinimumPollingIntervalSeconds,
             "检查间隔必须限制为最低 300 秒");
+        Assert(options.MonitoringEnabled && options.NotifyOriginals,
+            "旧配置缺少新字段时，监控和原创提醒必须默认开启");
 
         options.LocalPollingIntervalSeconds = 100_000;
         ConfigLoader.Save(options, path);
@@ -260,6 +279,8 @@ static Task TestConfigSaveAsync()
             Account = "thsottiaux",
             FeedMode = "direct",
             LocalPollingIntervalSeconds = 3600,
+            MonitoringEnabled = false,
+            NotifyOriginals = false,
             NotifyReplies = true,
             NotifyQuotes = false,
             NotifyReposts = true,
@@ -270,6 +291,8 @@ static Task TestConfigSaveAsync()
         ConfigLoader.Save(options, path);
         var loaded = ConfigLoader.Load(path);
         Assert(loaded.LocalPollingIntervalSeconds == 3600, "检查间隔应被保存");
+        Assert(!loaded.MonitoringEnabled && !loaded.NotifyOriginals,
+            "监控总开关和原创提醒设置应被保存");
         Assert(loaded.NotifyReplies && !loaded.NotifyQuotes && loaded.NotifyReposts,
             "提醒类型设置应被保存");
         Assert(!loaded.TopMost && !loaded.AutoStart, "程序行为设置应被保存");

@@ -9,6 +9,7 @@ namespace TiboMonitor.App;
 public sealed class TrayIconService : IDisposable
 {
     private readonly Forms.NotifyIcon _icon;
+    private readonly Forms.ToolStripMenuItem _checkNowItem;
     private readonly Forms.ToolStripMenuItem _autoStartItem;
     private readonly RollingFileLogger _logger;
     private bool _updatingAutoStart;
@@ -27,7 +28,9 @@ public sealed class TrayIconService : IDisposable
         _logger = logger;
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add("打开", null, (_, _) => showWindow());
-        menu.Items.Add("立即检查", null, async (_, _) => await RunSafelyAsync(checkNow));
+        _checkNowItem = new Forms.ToolStripMenuItem("立即检查");
+        _checkNowItem.Click += async (_, _) => await RunSafelyAsync(checkNow);
+        menu.Items.Add(_checkNowItem);
         menu.Items.Add("查看未读", null, (_, _) => showWindow());
         menu.Items.Add("设置...", null, (_, _) => showSettings());
         menu.Items.Add("查看日志", null, (_, _) => showLogs());
@@ -75,6 +78,8 @@ public sealed class TrayIconService : IDisposable
             _updatingAutoStart = false;
         }
     }
+
+    public void SetMonitoringEnabled(bool enabled) => _checkNowItem.Enabled = enabled;
 
     public void SetUnreadCount(int count)
     {

@@ -5,6 +5,8 @@
   "MockFeedPath": "mock/latest.json",
   "LocalPollingIntervalSeconds": 1200,
   "HttpTimeoutSeconds": 20,
+  "MonitoringEnabled": true,
+  "NotifyOriginals": true,
   "NotifyReplies": true,
   "NotifyQuotes": true,
   "NotifyReposts": false,

@@ -12,7 +12,6 @@ public sealed class DeduplicationService
         DateTimeOffset detectedAt)
     {
         var candidates = feed.Posts
-            .Where(post => ShouldNotify(post.Type, options))
             .GroupBy(post => post.Id, StringComparer.Ordinal)
             .Select(group => group.First())
             .OrderBy(post => post.CreatedAt)
@@ -25,7 +24,11 @@ public sealed class DeduplicationService
             state.BaselinePostId = candidates.Select(post => post.Id).Max(SnowflakeIdComparer.Instance);
 
             var notifyIds = options.NotifyRecentOnFirstRun
-                ? candidates.TakeLast(options.FirstRunRecentCount).Select(post => post.Id).ToHashSet(StringComparer.Ordinal)
+                ? candidates
+                    .Where(post => ShouldNotify(post.Type, options))
+                    .TakeLast(options.FirstRunRecentCount)
+                    .Select(post => post.Id)
+                    .ToHashSet(StringComparer.Ordinal)
                 : new HashSet<string>(StringComparer.Ordinal);
 
             foreach (var post in candidates)
@@ -46,9 +49,13 @@ public sealed class DeduplicationService
                 continue;
             }
 
-            state.Posts.Add(ToStoredPost(post, detectedAt, read: false));
+            var shouldNotify = ShouldNotify(post.Type, options);
+            state.Posts.Add(ToStoredPost(post, detectedAt, read: !shouldNotify));
             state.BaselinePostId = MaxId(state.BaselinePostId, post.Id);
-            added++;
+            if (shouldNotify)
+            {
+                added++;
+            }
         }
 
         Trim(state, options.MaxStatePosts);
@@ -73,6 +80,7 @@ public sealed class DeduplicationService
 
     private static bool ShouldNotify(PostType type, MonitorOptions options) => type switch
     {
+        PostType.Original => options.NotifyOriginals,
         PostType.Reply => options.NotifyReplies,
         PostType.Quote => options.NotifyQuotes,
         PostType.Repost => options.NotifyReposts,

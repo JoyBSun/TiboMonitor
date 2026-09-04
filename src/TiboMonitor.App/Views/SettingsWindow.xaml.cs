@@ -13,7 +13,7 @@ public partial class SettingsWindow : Window
     private readonly string _dataRoot;
     private readonly AutoStartService _autoStart;
     private readonly RollingFileLogger _logger;
-    private readonly Action _onSaved;
+    private readonly Action<bool> _onSaved;
 
     public SettingsWindow(
         MonitorOptions options,
@@ -21,7 +21,7 @@ public partial class SettingsWindow : Window
         string dataRoot,
         AutoStartService autoStart,
         RollingFileLogger logger,
-        Action onSaved)
+        Action<bool> onSaved)
     {
         InitializeComponent();
         _options = options;
@@ -37,6 +37,8 @@ public partial class SettingsWindow : Window
         IntervalMinutesTextBox.Text = Math.Max(
             MonitorOptions.MinimumPollingIntervalSeconds / 60,
             options.LocalPollingIntervalSeconds / 60).ToString();
+        MonitoringEnabledCheckBox.IsChecked = options.MonitoringEnabled;
+        NotifyOriginalsCheckBox.IsChecked = options.NotifyOriginals;
         NotifyRepliesCheckBox.IsChecked = options.NotifyReplies;
         NotifyQuotesCheckBox.IsChecked = options.NotifyQuotes;
         NotifyRepostsCheckBox.IsChecked = options.NotifyReposts;
@@ -78,6 +80,8 @@ public partial class SettingsWindow : Window
         }
 
         var oldInterval = _options.LocalPollingIntervalSeconds;
+        var oldMonitoringEnabled = _options.MonitoringEnabled;
+        var oldNotifyOriginals = _options.NotifyOriginals;
         var oldNotifyReplies = _options.NotifyReplies;
         var oldNotifyQuotes = _options.NotifyQuotes;
         var oldNotifyReposts = _options.NotifyReposts;
@@ -94,19 +98,23 @@ public partial class SettingsWindow : Window
             }
 
             _options.LocalPollingIntervalSeconds = intervalMinutes * 60;
+            _options.MonitoringEnabled = MonitoringEnabledCheckBox.IsChecked == true;
+            _options.NotifyOriginals = NotifyOriginalsCheckBox.IsChecked == true;
             _options.NotifyReplies = NotifyRepliesCheckBox.IsChecked == true;
             _options.NotifyQuotes = NotifyQuotesCheckBox.IsChecked == true;
             _options.NotifyReposts = NotifyRepostsCheckBox.IsChecked == true;
             _options.TopMost = TopMostCheckBox.IsChecked == true;
             _options.AutoStart = requestedAutoStart;
             ConfigLoader.Save(_options, _configPath);
-            _onSaved();
-            _logger.Info($"Settings saved; interval={intervalMinutes}m, replies={_options.NotifyReplies}, quotes={_options.NotifyQuotes}, reposts={_options.NotifyReposts}, topmost={_options.TopMost}, autostart={_options.AutoStart}");
+            _onSaved(!oldMonitoringEnabled && _options.MonitoringEnabled);
+            _logger.Info($"Settings saved; monitoring={_options.MonitoringEnabled}, interval={intervalMinutes}m, originals={_options.NotifyOriginals}, replies={_options.NotifyReplies}, quotes={_options.NotifyQuotes}, reposts={_options.NotifyReposts}, topmost={_options.TopMost}, autostart={_options.AutoStart}");
             Close();
         }
         catch (Exception exception)
         {
             _options.LocalPollingIntervalSeconds = oldInterval;
+            _options.MonitoringEnabled = oldMonitoringEnabled;
+            _options.NotifyOriginals = oldNotifyOriginals;
             _options.NotifyReplies = oldNotifyReplies;
             _options.NotifyQuotes = oldNotifyQuotes;
             _options.NotifyReposts = oldNotifyReposts;

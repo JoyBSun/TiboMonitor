@@ -93,6 +93,7 @@ public partial class App : System.Windows.Application
             exit: ExitApplication,
             _autoStart,
             _logger);
+        _trayIcon.SetMonitoringEnabled(options.MonitoringEnabled);
 
         _coordinator.UnreadChanged += OnUnreadChanged;
         _coordinator.StatusChanged += status =>
@@ -139,7 +140,7 @@ public partial class App : System.Windows.Application
         });
     }
 
-    private void ApplySettings()
+    private void ApplySettings(bool checkImmediately)
     {
         if (_options is null)
         {
@@ -148,7 +149,12 @@ public partial class App : System.Windows.Application
 
         _mainWindow?.ApplyOptions(_options);
         _coordinator?.RestartPolling();
+        _trayIcon?.SetMonitoringEnabled(_options.MonitoringEnabled);
         _trayIcon?.SetAutoStartChecked(_autoStart?.IsEnabled() == true);
+        if (checkImmediately && _coordinator is not null)
+        {
+            _ = _coordinator.CheckNowAsync(manual: false);
+        }
     }
 
     private void OnUnreadChanged(int unreadCount, bool shouldShow)

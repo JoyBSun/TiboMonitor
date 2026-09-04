@@ -5,6 +5,8 @@
   "MockFeedPath": "",
   "LocalPollingIntervalSeconds": 1200,
   "HttpTimeoutSeconds": 20,
+  "MonitoringEnabled": true,
+  "NotifyOriginals": true,
   "NotifyReplies": false,
   "NotifyQuotes": true,
   "NotifyReposts": false,

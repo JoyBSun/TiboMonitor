@@ -96,7 +96,7 @@ Id, Text, CreatedAt, FirstDetectedAt, Url, Type, Read
 
 ## 设置即时应用
 
-托盘“设置...”打开 `SettingsWindow`。底部“取消/保存”按钮固定显示，主体区域在小屏幕或高 DPI 下自动滚动；窗口尺寸根据可用桌面收敛，且不能超过 720×760。普通设置只开放低风险选项：检查间隔、提醒类型、置顶和开机启动。
+托盘“设置...”打开 `SettingsWindow`。底部“取消/保存”按钮固定显示，主体区域在小屏幕或高 DPI 下自动滚动；窗口尺寸根据可用桌面收敛，且不能超过 720×760。普通设置开放监控总开关、检查间隔、原创/回复/引用/转发提醒、置顶和开机启动。
 
 ```text
 SettingsWindow
@@ -104,8 +104,11 @@ SettingsWindow
   -> ConfigLoader.Save（临时文件 + 原子替换）
   -> MainWindow.ApplyOptions（置顶立即生效）
   -> AutoStartService（注册表立即生效）
-  -> MonitorCoordinator.RestartPolling（新间隔立即生效）
+  -> MonitorCoordinator.RestartPolling（启停监控或应用新间隔）
+  -> 监控由关闭变为开启时立即检查一次
 ```
+
+关闭监控后，定时器和“立即检查”都会停用，但程序、托盘、已有未读和 `UserData` 保持不变。关闭某类提醒时，该类新帖子仍以已读状态记录，之后重新开启不会补弹旧内容。
 
 账号、数据源地址、首次历史提醒和 baseline 重置仍保留在配置文件/高级维护层，避免普通用户误操作。
 

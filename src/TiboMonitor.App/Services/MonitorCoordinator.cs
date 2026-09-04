@@ -44,15 +44,29 @@ public sealed class MonitorCoordinator : IDisposable
 
     public void RestartPolling()
     {
+        var monitoringEnabled = _options.MonitoringEnabled && !_shutdown.IsCancellationRequested;
         lock (_pollingGate)
         {
             _pollingCancellation?.Cancel();
             _pollingCancellation?.Dispose();
-            _pollingCancellation = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
-            _pollingTask = PollAsync(_pollingCancellation.Token);
+            _pollingCancellation = null;
+            _pollingTask = null;
+            if (monitoringEnabled)
+            {
+                _pollingCancellation = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
+                _pollingTask = PollAsync(_pollingCancellation.Token);
+            }
         }
 
-        _logger.Info($"Polling interval applied: {_options.LocalPollingIntervalSeconds} seconds");
+        if (monitoringEnabled)
+        {
+            _logger.Info($"Monitoring enabled; polling interval={_options.LocalPollingIntervalSeconds} seconds");
+        }
+        else
+        {
+            _logger.Info("Monitoring paused; periodic checks stopped");
+            StatusChanged?.Invoke($"监控已暂停 · 未读 {UnreadCount}");
+        }
     }
 
     public async Task InitializeAsync()
@@ -70,11 +84,28 @@ public sealed class MonitorCoordinator : IDisposable
         }
 
         UnreadChanged?.Invoke(UnreadCount, UnreadCount > 0);
+        if (!_options.MonitoringEnabled)
+        {
+            StatusChanged?.Invoke($"监控已暂停 · 未读 {UnreadCount}");
+            return;
+        }
+
         await CheckNowAsync(manual: false);
     }
 
     public async Task CheckNowAsync(bool manual)
     {
+        if (!_options.MonitoringEnabled)
+        {
+            if (manual)
+            {
+                _logger.Info("Manual check skipped because monitoring is paused");
+            }
+
+            StatusChanged?.Invoke($"监控已暂停 · 未读 {UnreadCount}");
+            return;
+        }
+
         if (!await _operationGate.WaitAsync(0, _shutdown.Token))
         {
             if (manual)
